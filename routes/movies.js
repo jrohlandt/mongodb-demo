@@ -2,45 +2,41 @@ const Router = require('express').Router;
 
 const router = Router();
 
+const mongodb = require('mongodb');
 const db = require('../db');
 
 
 // Get list of movies movies
 router.get('/', (req, res, next) => {
-  // Return a list of dummy movies
-  // Later, this data will be fetched from MongoDB
-  // const queryPage = req.query.page;
-  // const pageSize = 5;
-  // let resultmovies = [...movies];
-  // if (queryPage) {
-  //   resultmovies = movies.slice(
-  //     (queryPage - 1) * pageSize,
-  //     queryPage * pageSize
-  //   );
-  // }
-  // res.json(resultmovies);
 
   let movies = [];
+  let find = {};
+  if (req.query.genre) {
+    find = {genre: req.query.genre}; 
+  }
+
   db.getDb()
     .collection('movies')
-    .find()
+    .find(find)
     .forEach(m => {
       movies.push(m);
     })
-    .then(result => {
-      res.status(200).json(movies);
-    })
-    .catch(err => {
-      res.status(500).json({message: 'An error occurred.'});
-    });
-
+    .then(result => res.status(200).json({movies: movies}))
+    .catch(err => res.status(500).json({error: err}));
 });
 
 // Get single movie
 router.get('/:id', (req, res, next) => {
-  const movie = movies.find(p => p._id === req.params.id);
-  res.json(movie);
+  db.getDb()
+    .collection('movies')
+    .findOne({_id: mongodb.ObjectId(req.params.id)})
+    .then(movie => {
+      return res.status(200).json({movie: movie})
+    })
+    .catch(err => res.status(500).json({error: err}));
 });
+
+
 
 // Add new movie
 // Requires logged in user
