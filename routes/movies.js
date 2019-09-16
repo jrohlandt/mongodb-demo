@@ -21,8 +21,8 @@ router.get('/', (req, res, next) => {
     .forEach(m => {
       movies.push(m);
     })
-    .then(result => res.status(200).json({movies: movies}))
-    .catch(err => res.status(500).json({error: err}));
+    .then(result => res.status(200).json({movies}))
+    .catch(error => res.status(500).json({error}));
 });
 
 // Get single movie
@@ -31,9 +31,9 @@ router.get('/:id', (req, res, next) => {
     .collection('movies')
     .findOne({_id: mongodb.ObjectId(req.params.id)})
     .then(movie => {
-      return res.status(200).json({movie: movie})
+      return res.status(200).json({movie})
     })
-    .catch(err => res.status(500).json({error: err}));
+    .catch(error => res.status(500).json({error}));
 });
 
 
