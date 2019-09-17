@@ -3,6 +3,9 @@ const Router = require('express').Router;
 const router = Router();
 
 const mongodb = require('mongodb');
+const Decimal128 = mongodb.Decimal128;
+const ObjectId = mongodb.ObjectId;
+
 const db = require('../db');
 
 
@@ -39,29 +42,41 @@ router.get('/:id', (req, res, next) => {
 
 
 // Add new movie
-// Requires logged in user
 router.post('', (req, res, next) => {
-  const newmovie = {
-    name: req.body.name,
+  const newMovie = {
+    name: req.body.title,
     description: req.body.description,
-    price: parseFloat(req.body.price), // store this as 128bit decimal in MongoDB
-    image: req.body.image
+    year: req.body.year,
+    rating: new Decimal128.fromString(req.body.rating.toString()),
+    genre: req.body.genre,
   };
-  console.log(newmovie);
-  res.status(201).json({ message: 'movie added', movieId: 'DUMMY' });
+
+  db.getDb()
+      .collection('movies')
+      .insertOne(newMovie)
+      .then(result => {
+          res.status(201).json({ message: 'movie added', movieId: result.insertedId });
+      })
+      .catch(error => res.status(500).json({error}));
 });
 
 // Edit existing movie
-// Requires logged in user
 router.patch('/:id', (req, res, next) => {
   const updatedmovie = {
-    name: req.body.name,
+    name: req.body.title,
     description: req.body.description,
-    price: parseFloat(req.body.price), // store this as 128bit decimal in MongoDB
-    image: req.body.image
+    year: req.body.year,
+    rating: new Decimal128.fromString(req.body.rating.toString()),
+    genre: req.body.genre,
   };
-  console.log(updatedmovie);
-  res.status(200).json({ message: 'movie updated', movieId: 'DUMMY' });
+
+  db.getDb()
+      .collection('movies')
+      .updateOne({_id: new ObjectId(req.params.id)}, { $set: updatedmovie })
+      .then(result => {
+          res.status(200).json({message: 'success', movieId: req.params.id});
+      })
+      .catch(error => res.status(500).json({error}));
 });
 
 
